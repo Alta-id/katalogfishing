@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALTA.ID</title>
+
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background:#f5f7fa;
+}
+
+/* HEADER */
+.header {
+  position:sticky;
+  top:0;
+  background:white;
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+  font-size:18px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* SEARCH */
+.search-box {
+  padding:10px;
+  background:white;
+}
+
+.search-box input {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+
+/* CATEGORY */
+.category-scroll {
+  display:flex;
+  overflow-x:auto;
+  gap:8px;
+  padding:10px;
+  background:white;
+}
+
+.category-scroll button {
+  border:none;
+  padding:6px 12px;
+  border-radius:20px;
+  background:#e3f2fd;
+  color:#1976d2;
+}
+
+.active {
+  background:#1976d2 !important;
+  color:white !important;
+}
+
+/* BRAND */
+.brand {
+  display:flex;
+  gap:10px;
+  padding:10px;
+}
+
+.brand button {
+  border:none;
+  padding:6px 12px;
+  border-radius:20px;
+  background:#bbdefb;
+  color:#0d47a1;
+}
+
+/* GRID */
+.container {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  padding:10px;
+}
+
+/* CARD */
+.card {
+  background:white;
+  border-radius:12px;
+  padding:8px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.08);
+}
+
+.card img {
+  width:100%;
+  height:120px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.title {
+  font-size:13px;
+  margin:5px 0;
+}
+
+.price {
+  font-weight:bold;
+  color:#1976d2;
+}
+
+/* BUTTON */
+.btn {
+  width:100%;
+  padding:7px;
+  border:none;
+  border-radius:6px;
+  margin-top:5px;
+}
+
+.cart {
+  background:#e3f2fd;
+  color:#1976d2;
+}
+
+.buy {
+  background:#1976d2;
+  color:white;
+}
+
+/* CHECKOUT */
+.checkout-bar {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:white;
+  padding:10px;
+  box-shadow:0 -2px 5px rgba(0,0,0,0.1);
+}
+
+.checkout-btn {
+  width:100%;
+  padding:10px;
+  background:#1976d2;
+  color:white;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Katalog Produk</div>
+
+<!-- SEARCH -->
+<div class="search-box">
+  <input type="text" id="search" placeholder="Cari produk..." onkeyup="update()">
+</div>
+
+<!-- CATEGORY -->
+<div class="category-scroll">
+  <button onclick="setCat('all',this)" class="active">Semua</button>
+  <button onclick="setCat('joran',this)">Joran</button>
+  <button onclick="setCat('reel',this)">Reel</button>
+  <button onclick="setCat('senar',this)">Senar</button>
+  <button onclick="setCat('umpan',this)">Umpan</button>
+</div>
+
+<!-- BRAND -->
+<div class="brand">
+  <button onclick="setBrand('all',this)" class="active">Semua Brand</button>
+  <button onclick="setBrand('ryukai',this)">Ryukai</button>
+  <button onclick="setBrand('fukushima',this)">Fukushima</button>
+</div>
+
+<!-- PRODUK -->
+<div class="container">
+
+<div class="card product" data-cat="joran" data-brand="ryukai" data-name="joran ryukai galeon">
+<img src="joran1.jpg">
+<div class="title">Joran Ryukai Galeon</div>
+<div class="price">Rp 10.000</div>
+<button class="btn cart" onclick="addCart('Joran Ryukai Galeon')">+ Keranjang</button>
+<button class="btn buy" onclick="order('Joran Ryukai Galeon')">Beli</button>
+</div>
+
+<div class="card product" data-cat="joran" data-brand="fukushima" data-name="joran fukushima hector">
+<img src="joran2.jpg">
+<div class="title">Joran Fukushima Hector</div>
+<div class="price">Rp 10.000</div>
+<button class="btn cart" onclick="addCart('Joran Fukushima Hector')">+ Keranjang</button>
+<button class="btn buy" onclick="order('Joran Fukushima Hector')">Beli</button>
+</div>
+
+</div>
+
+<!-- CHECKOUT -->
+<div class="checkout-bar">
+  <button class="checkout-btn" onclick="checkout()">Checkout</button>
+</div>
+
+<script>
+let cat = 'all';
+let brand = 'all';
+let cart = [];
+
+function setCat(c, btn){
+  cat = c;
+  brand = 'all'; // reset brand
+  update();
+
+  setActive(btn, '.category-scroll button');
+
+  // reset brand UI
+  document.querySelectorAll('.brand button').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.brand button').classList.add('active');
+}
+
+function setBrand(b, btn){
+  brand = b;
+  update();
+  setActive(btn, '.brand button');
+}
+
+function update(){
+  let keyword = document.getElementById("search").value.toLowerCase();
+
+  document.querySelectorAll('.product').forEach(p=>{
+    let name = p.dataset.name;
+
+    let matchSearch = name.includes(keyword);
+    let matchCat = (cat === 'all' || p.dataset.cat === cat);
+    let matchBrand = (brand === 'all' || p.dataset.brand === brand);
+
+    p.style.display = (matchSearch && matchCat && matchBrand) ? 'block' : 'none';
+  });
+}
+
+function setActive(btn, selector){
+  document.querySelectorAll(selector).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function addCart(item){
+  cart.push(item);
+  alert('Ditambahkan: ' + item);
+}
+
+function checkout(){
+  if(cart.length==0) return alert('Keranjang kosong');
+
+  let text="Halo, saya mau pesan:\n";
+  cart.forEach(i=>text+='- '+i+'\n');
+
+  window.open("https://wa.me/6285117385055?text="+encodeURIComponent(text));
+}
+
+function order(product){
+  window.open("https://wa.me/6285117385055?text="+encodeURIComponent("Halo, saya mau pesan " + product));
+}
+
+update();
+</script>
+
+</body>
+</html>
