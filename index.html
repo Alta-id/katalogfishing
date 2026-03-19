@@ -88,12 +88,30 @@ body { margin:0; font-family:'Segoe UI'; background:#f5f7fa; }
 .qty-btn {
   padding:3px 8px; margin:0 3px;
 }
+
+/* 🔔 NOTIFIKASI */
+#toast {
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#1976d2;
+  color:white;
+  padding:10px 20px;
+  border-radius:8px;
+  opacity:0;
+  transition:0.3s;
+  z-index:999;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">Katalog Perlengkapan Pancing</div>
+
+<!-- NOTIF -->
+<div id="toast">Ditambahkan ke keranjang</div>
 
 <div class="search-box">
 <input type="text" id="search" placeholder="Cari produk..." onkeyup="update()">
@@ -150,6 +168,17 @@ let cat='all';
 let brand='all';
 let cart=[];
 
+/* 🔔 NOTIFIKASI */
+function showToast(text){
+  let toast=document.getElementById("toast");
+  toast.innerText=text;
+  toast.style.opacity="1";
+
+  setTimeout(()=>{
+    toast.style.opacity="0";
+  },1500);
+}
+
 function setCat(c,btn){
 cat=c; brand='all'; update();
 setActive(btn,'.category-scroll button');
@@ -178,12 +207,14 @@ document.querySelectorAll(selector).forEach(b=>b.classList.remove('active'));
 btn.classList.add('active');
 }
 
-/* CART LOGIC */
+/* CART */
 function addCart(name){
 let item=cart.find(i=>i.name===name);
 if(item){ item.qty++; }
 else{ cart.push({name:name, qty:1}); }
+
 renderCart();
+showToast("✔ Ditambahkan ke keranjang");
 }
 
 function renderCart(){
@@ -191,7 +222,7 @@ let html="";
 cart.forEach((item,i)=>{
 html+=`
 <div style="border-bottom:1px solid #ddd; padding:8px;">
-${item.name} <br>
+${item.name}<br>
 <button class="qty-btn" onclick="changeQty(${i},-1)">-</button>
 ${item.qty}
 <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
@@ -220,7 +251,10 @@ overlay.style.display="block";
 }
 
 function checkout(){
-if(cart.length==0){ alert("Keranjang kosong"); return; }
+if(cart.length==0){
+showToast("Keranjang kosong");
+return;
+}
 
 let text="Halo, saya mau pesan:\n";
 cart.forEach(i=>{
